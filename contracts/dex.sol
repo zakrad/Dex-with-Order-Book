@@ -20,6 +20,7 @@ contract Dex is Wallet{
         bytes32 ticker;
         uint amount;
         uint price;
+        uint filled;
     }
 
     uint public nextOrderId = 0;
@@ -40,7 +41,7 @@ contract Dex is Wallet{
 
         Order[] storage orders = orderBook[ticker][uint(side)];
         orders.push(
-            Order(nextOrderId, msg.sender, side, ticker, amount, price)
+            Order(nextOrderId, msg.sender, side, ticker, amount, price, 0)
             );
         
         //Buble sort

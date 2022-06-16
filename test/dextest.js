@@ -5,12 +5,16 @@ const truffleAssert = require("truffle-assertions");
 
 contract("Dex", accounts => {
 
+
     it("should throw an error if ETH balance is too low when creating BUY limit order", async () => {
         let dex = await Dex.deployed()
+        let link = await Link.deployed()
+
         await truffleAssert.reverts(
             dex.createLimitOrder(0, web3.utils.fromUtf8("LINK"), 10, 1)
         )
-        dex.depositEth({ value: 10 })
+
+        await dex.depositEth({ value: 10 })
         await truffleAssert.passes(
             dex.createLimitOrder(0, web3.utils.fromUtf8("LINK"), 10, 1)
         )
