@@ -3,11 +3,13 @@
 pragma solidity 0.8.8;
 pragma experimental ABIEncoderV2;
 
+import "./wallet.sol";
+
 contract Dex is Wallet{
     
     enum Side{
         BUY,
-        SELL,
+        SELL
     }
 
     struct Order {
@@ -19,14 +21,14 @@ contract Dex is Wallet{
         uint price;
     }
 
-    mapping(bytes32 => mapping(uint => Order[]));
+    mapping(bytes32 => mapping(uint => Order[])) public orderBook;
 
     function getOrderBook(bytes32 ticker, Side side) view public returns(Order[] memory) {
-        return orderBook[ticker][uint(side)]
+        return orderBook[ticker][uint(side)];
     }
 
-    function createLimitOrder(){
+    // function createLimitOrder(){
         
-    }
+    // }
 }
 
