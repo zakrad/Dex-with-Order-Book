@@ -7,7 +7,6 @@ contract("Dex", accounts => {
 
     it("should throw an error if ETH balance is too low when creating BUY limit order", async () => {
         let dex = await Dex.deployed()
-        let link = await Link.deployed()
         await truffleAssert.reverts(
             dex.createLimitOrder(0, web3.utils.fromUtf8("LINK"), 10, 1)
         )
