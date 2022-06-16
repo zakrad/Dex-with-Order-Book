@@ -73,7 +73,57 @@ contract Dex is Wallet{
     }
 
     function createMarketOrder(Side side, bytes32 ticker, uint amount) public {
+        if (side == Side.SELL) {
+        require(balances[msg.sender][ticker] >= amount, "Insufficent balance");
+            
+        } else {
+            
+        }
+
+        uint orderBookSide;
+        if (side == Side.BUY) {
+            orderBookSide = 1;
+        } else {
+            orderBookSide = 0;            
+        }
+        Order[] storage orders = orderBook[ticker][orderBookSide];
         
+        uint totalFilled = 0;
+
+        for (uint256 i = 0; i < orders.length && totalFilled < amount; i++) {
+            uint leftToFill = amount.sub(totalFilled);
+            uint availableToFill = orders[i].amount.sub(orders[i].filled);
+            uint filled = 0;
+
+            if (availableToFilled > leftToFill) {
+                filled = leftToFill;                
+            } else {
+                filled = availableToFilled;
+            }
+
+            totalFilled = totalFilled.add(filled);
+            orders[i].filled = orders[i].filled.add(filled);
+            uint cost = filled.mul(orders[i].price)
+
+            if(side == Side.BUY){
+                require(balances[msg.sender]["ETH"] >= filled.mul(orders[i].price));
+                balances[msg.sender][ticker] = balances[msg.sender][ticker].add(filled);
+                balances[msg.sender]["ETH"] = balances[msg.sender]["ETH"].sub(cost);
+
+                balances[orders[i].trader][ticker] = balances[orders[i].trader][ticker].sub(filled);
+                balances[orders[i].trader]["ETH"] = balances[orders[i].trader]["ETH"].add(cost);
+            } else if {
+                balances[msg.sender][ticker] = balances[msg.sender][ticker].sub(filled);
+                balances[msg.sender]["ETH"] = balances[msg.sender]["ETH"].add(cost);
+                
+                balances[orders[i].trader][ticker] = balances[orders[i].trader][ticker].add(filled);
+                balances[orders[i].trader]["ETH"] = balances[orders[i].trader]["ETH"].sub(cost);
+            }
+        }
+
+        // for (uint256 i = 0; i < array.length; i++) {
+            
+        // }
     }
 }
 
