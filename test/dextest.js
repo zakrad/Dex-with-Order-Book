@@ -3,7 +3,7 @@ const Dex = artifacts.require("Dex");
 const Link = artifacts.require("Link");
 const truffleAssert = require("truffle-assertions");
 
-contract.skip("Dex", accounts => {
+contract("Dex", accounts => {
 
 
     it("should throw an error if ETH balance is too low when creating BUY limit order", async () => {

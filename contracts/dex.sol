@@ -95,15 +95,15 @@ contract Dex is Wallet{
             uint availableToFill = orders[i].amount.sub(orders[i].filled);
             uint filled = 0;
 
-            if (availableToFilled > leftToFill) {
+            if (availableToFill > leftToFill) {
                 filled = leftToFill;                
             } else {
-                filled = availableToFilled;
+                filled = availableToFill;
             }
 
             totalFilled = totalFilled.add(filled);
             orders[i].filled = orders[i].filled.add(filled);
-            uint cost = filled.mul(orders[i].price)
+            uint cost = filled.mul(orders[i].price);
 
             if(side == Side.BUY){
                 require(balances[msg.sender]["ETH"] >= filled.mul(orders[i].price));
@@ -112,7 +112,7 @@ contract Dex is Wallet{
 
                 balances[orders[i].trader][ticker] = balances[orders[i].trader][ticker].sub(filled);
                 balances[orders[i].trader]["ETH"] = balances[orders[i].trader]["ETH"].add(cost);
-            } else if {
+            } else {
                 balances[msg.sender][ticker] = balances[msg.sender][ticker].sub(filled);
                 balances[msg.sender]["ETH"] = balances[msg.sender]["ETH"].add(cost);
                 
@@ -120,6 +120,15 @@ contract Dex is Wallet{
                 balances[orders[i].trader]["ETH"] = balances[orders[i].trader]["ETH"].sub(cost);
             }
         }
+
+        while ( orders.length > 0 && orders[0].filled == orders[0].amount){
+            
+            for (uint256 i = 0; i < orders.length - 1; i++) {
+                orders[i] = orders[i + 1];
+            }
+            orders.pop();
+        }
+
 
         // for (uint256 i = 0; i < array.length; i++) {
             
