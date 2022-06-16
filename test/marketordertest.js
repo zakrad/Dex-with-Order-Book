@@ -91,25 +91,72 @@ contract("Dex", accounts => {
 
         let balanceAfter = await dex.balances(accounts[0], web3.utils.fromUtf8("LINK"))
 
-        assert.equal(balanceBefore, balanceAfter + 15)
+        assert.equal(balanceBefore + 15, balanceAfter)
     })
 
     it("The eth balance of the buyer should decrease with the filled amount", async () => {
         let dex = await Dex.deployed()
         let link = await Link.deployed()
-        
-        await link.approve(dex.address, 500)
-        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 300)
-        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 100)
-        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 200)
 
-        let orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 1);
-        assert(orderbook.length > 0)
-        for (let i = 0; i < orderbook.length - 1; i++) {
-            assert(orderbook[i].price <= orderbook[i + 1].price, "not right order in sell book")
-        }
+        await link.approve(dex.address, 500, { from: accounts[1] })
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 300, { from: account[1] })
+
+
+        let balanceBefore = await dex.balances(accounts[0], web3.utils.fromUtf8("ETH"))
+        await dex.createMarketOrder(0, web3.utils.fromUtf8("LINK"), 1)
+        let balanceAfter = await dex.balances(accounts[0], web3.utils.fromUtf8("ETH"))
+
+        assert.equal(balanceBefore - 300, balanceAfter)
+    })
+    it("The token balance of the limit order sellers should decrease with filled amounts", async () => {
+        let dex = await Dex.deployed()
+        let link = await Link.deployed()
+
+        let orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 1)
+        assert(orderbook.length == 0, "Sell side Orderbook should be empty at start of test")
+
+        await link.approve(dex.address, 500, { from: accounts[2] })
+        await dex.deposit(100, web3.utils.fromUtf8("LINK"), { from: account[2] })
+
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 300, { from: account[1] })
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 400, { from: account[2] })
+
+        let account1balanceBefore = await dex.balances(accounts[1], web3.utils.fromUtf8("LINK"))
+        let account2balanceBefore = await dex.balances(accounts[2], web3.utils.fromUtf8("LINK"))
+
+        await dex.createMarketOrder(0, web3.utils.fromUtf8("LINK"), 2)
+
+        let account1balanceAfter = await dex.balances(accounts[1], web3.utils.fromUtf8("LINK"))
+        let account2balanceAfter = await dex.balances(accounts[2], web3.utils.fromUtf8("LINK"))
+
+        assert.equal(account1balanceBefore - 1, account1balanceAfter)
+        assert.equal(account2balanceBefore - 1, account2balanceAfter)
     })
 
+    it("Filled limit orders should be removed from the orderbook", async () => {
+        let dex = await Dex.deployed()
 
+        let orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 1)
+        assert(orderbook.length == 0, "Sell side Orderbook should be empty at start of test")
 
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 300, { from: account[1] })
+        await dex.createMarketOrder(0, web3.utils.fromUtf8("LINK"), 1)
+
+        orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 1)
+        assert(orderbook.length == 0, "Sell side Orderbook should be empty after trade")
+    })
+
+    it("Limit orders filled property should be set correctly after a trade", async () => {
+        let dex = await Dex.deployed()
+
+        let orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 1)
+        assert(orderbook.length == 0, "Sell side Orderbook should be empty at start of test")
+
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 5, 300, { from: account[1] })
+        await dex.createMarketOrder(0, web3.utils.fromUtf8("LINK"), 2)
+
+        orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 1)
+        assert(orderbook[0].filled, 2)
+        assert(orderbook[0].amount, 5)
+    })
 })
