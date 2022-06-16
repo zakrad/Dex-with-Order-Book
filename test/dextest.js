@@ -41,7 +41,7 @@ contract("Dex", accounts => {
         await dex.createLimitOrder(0, web3.utils.fromUtf8("LINK"), 1, 200)
 
         let orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 0);
-
+        assert(orderbook.length > 0)
         for (let i = 0; i < orderbook.length - 1; i++) {
             assert(orderbook[i].price >= orderbook[i + 1].price, "not right order in buy book")
         }
@@ -51,12 +51,12 @@ contract("Dex", accounts => {
         let dex = await Dex.deployed()
         let link = await Link.deployed()
         await link.approve(dex.address, 500)
-        await dex.createLimitOrder(0, web3.utils.fromUtf8("LINK"), 1, 300)
-        await dex.createLimitOrder(0, web3.utils.fromUtf8("LINK"), 1, 100)
-        await dex.createLimitOrder(0, web3.utils.fromUtf8("LINK"), 1, 200)
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 300)
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 100)
+        await dex.createLimitOrder(1, web3.utils.fromUtf8("LINK"), 1, 200)
 
         let orderbook = await dex.getOrderBook(web3.utils.fromUtf8("LINK"), 1);
-
+        assert(orderbook.length > 0)
         for (let i = 0; i < orderbook.length - 1; i++) {
             assert(orderbook[i].price <= orderbook[i + 1].price, "not right order in sell book")
         }
